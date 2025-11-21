@@ -17,7 +17,7 @@ use App\Http\Controllers\{
 };
 
 // AUTH
-Route::post('/register', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // PUBLIC ROUTES (bisa diakses tanpa login)
