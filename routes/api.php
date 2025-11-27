@@ -40,6 +40,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/buku/{id}', [BukuController::class, 'update']);
     Route::delete('/buku/{id}', [BukuController::class, 'destroy']);
 
+    // LAST READ
+    Route::get('/last-read/{id_user}', [BukuController::class, 'lastRead']);
+    Route::post('/last-read', [BukuController::class, 'storeLastRead']);
+
     // REVIEW
     Route::post('/review', [ReviewController::class, 'store']);
     Route::delete('/review/{id}', [ReviewController::class, 'destroy']);
@@ -70,4 +74,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // LOGOUT
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Tambahkan header CORS
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, X-Requested-With');
 });

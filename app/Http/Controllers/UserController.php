@@ -33,4 +33,20 @@ class UserController extends Controller
         User::destroy($id);
         return ['success' => true];
     }
+    public function getByNama($nama)
+    {
+        $user = User::where('nama', $nama)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $user
+        ]);
+    }
 }

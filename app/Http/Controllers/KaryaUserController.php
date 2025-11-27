@@ -12,14 +12,40 @@ class KaryaUserController extends Controller
         return KaryaUser::with('user')->get();
     }
 
+    // di app/Http/Controllers/KaryaUserController.php
     public function store(Request $request)
     {
         $request->validate([
-            'id_user'=>'required',
-            'judul'=>'required',
-            'isi'=>'required'
+            'judul' => 'required|string|max:255',
+            'isi' => 'required|string',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        return KaryaUser::create($request->all());
+        try {
+            $karya = new KaryaUser();
+            $karya->judul = $request->judul;
+            $karya->isi = $request->isi;
+            $karya->id_user = $request->id_user; // Langsung dari Flutter
+            $karya->status = 'diterima'; // LANGSUNG APPROVED
+
+            // Upload gambar jika ada
+            if ($request->hasFile('gambar')) {
+                $imagePath = $request->file('gambar')->store('karya_images', 'public');
+                $karya->gambar = $imagePath;
+            }
+
+            $karya->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Karya berhasil diupload',
+                'data' => $karya
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal upload karya: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
