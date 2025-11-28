@@ -9,7 +9,19 @@ class KaryaUserController extends Controller
 {
     public function index()
     {
-        return KaryaUser::with('user')->get();
+        $karya = KaryaUser::with('user')->get();
+
+        // Tambahkan URL gambar penuh
+        $karya->map(function ($item) {
+            if ($item->file_lampiran) {
+                $item->gambar_url = asset('storage/' . $item->file_lampiran);
+            } else {
+                $item->gambar_url = null;
+            }
+            return $item;
+        });
+
+        return $karya;
     }
 
     // di app/Http/Controllers/KaryaUserController.php
@@ -18,7 +30,7 @@ class KaryaUserController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'isi' => 'required|string',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'file_lampiran' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
@@ -29,10 +41,12 @@ class KaryaUserController extends Controller
             $karya->status = 'diterima'; // LANGSUNG APPROVED
 
             // Upload gambar jika ada
-            if ($request->hasFile('gambar')) {
-                $imagePath = $request->file('gambar')->store('karya_images', 'public');
-                $karya->gambar = $imagePath;
+            if ($request->hasFile('file_lampiran')) {
+                $filename = time() . '_' . $request->file('file_lampiran')->getClientOriginalName();
+                $path = $request->file('file_lampiran')->storeAs('karya_images', $filename, 'public');
+                $karya->file_lampiran = $path;
             }
+
 
             $karya->save();
 
