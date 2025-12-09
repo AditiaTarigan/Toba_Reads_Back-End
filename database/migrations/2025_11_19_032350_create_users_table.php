@@ -14,6 +14,9 @@ class CreateUsersTable extends Migration
             $table->string('nama', 150);
             $table->string('email', 150)->unique();
             $table->string('password', 255);
+            $table->text('bio')->nullable();
+            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->nullable();
+            $table->date('tanggal_lahir')->nullable();
             $table->string('no_hp', 20)->nullable();
             $table->timestampTz('created_at')->useCurrent();
             $table->timestampTz('updated_at')->useCurrent();

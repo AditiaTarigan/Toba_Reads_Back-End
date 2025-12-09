@@ -37,18 +37,24 @@ class KaryaUserController extends Controller
             $karya = new KaryaUser();
             $karya->judul = $request->judul;
             $karya->isi = $request->isi;
-            $karya->id_user = $request->id_user; // Langsung dari Flutter
-            $karya->status = 'diterima'; // LANGSUNG APPROVED
+            $karya->id_user = $request->id_user;
+            $karya->status = 'diterima';
 
-            // Upload gambar jika ada
             if ($request->hasFile('file_lampiran')) {
                 $filename = time() . '_' . $request->file('file_lampiran')->getClientOriginalName();
                 $path = $request->file('file_lampiran')->storeAs('karya_images', $filename, 'public');
                 $karya->file_lampiran = $path;
             }
 
-
             $karya->save();
+
+            // LOAD RELASI USER SEBELUM RETURN
+            $karya->load('user');
+
+            // URL gambar
+            $karya->gambar_url = $karya->file_lampiran
+                ? asset('storage/' . $karya->file_lampiran)
+                : null;
 
             return response()->json([
                 'success' => true,
