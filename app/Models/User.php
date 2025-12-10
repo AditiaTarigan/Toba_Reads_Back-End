@@ -21,12 +21,25 @@ class User extends Authenticatable
         'email',
         'password',
         'no_hp',
+<<<<<<< HEAD
         'role_id',
+=======
+        'bio',
+        'jenis_kelamin',
+        'tanggal_lahir',
+        'role',
+>>>>>>> 8b49cacd0caf28484b6dbb5034e1e644ba5506d5
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     // Relasi
