@@ -1,37 +1,31 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 
-<<<<<<< HEAD
-// Redirect root ke login admin (opsional)
+// 1. Route Root (/) - Mengarahkan Admin ke Dashboard, Tamu ke Login.
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('admin.dashboard');
+    }
+    // Mengarahkan ke admin.login, BUKAN admin.aauth.login
     return redirect()->route('admin.login');
-});
+})->name('home');
 
-// Group Route untuk Tamu (Belum Login)
+// 2. Route untuk Tamu (Login & Show Form)
 Route::middleware('guest')->group(function () {
+    // Nama rute: admin.login
     Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+    // Nama rute: admin.login.submit
     Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
 });
 
-// Group Route Admin (Terproteksi Middleware 'auth' DAN 'admin')
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
-
-    // Nanti tambahkan route kelola buku di sini
-    // Route::get('/books', ...);
+// 3. Route Admin yang Terproteksi
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Nama rute: admin.dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Nama rute: admin.logout
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 });
-=======
-// HAPUS withoutMiddleware untuk semua route
-Route::get('/', function () {
-    return view('welcome');
-}); // TANPA withoutMiddleware
-
-Route::get('/hallo', function () {
-    return view('hallo');
-}); // TANPA withoutMiddleware
->>>>>>> 8b49cacd0caf28484b6dbb5034e1e644ba5506d5

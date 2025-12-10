@@ -20,12 +20,16 @@ class AdminAuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        // 🚨 Perbaikan 1: Gunakan Guard 'web' untuk attempt
+        if (Auth::guard('web')->attempt($credentials)) {
             $request->session()->regenerate();
 
-            // Cek lagi apakah dia admin (Double check)
-            if (Auth::user()->role->nama_role !== 'admin') {
-                Auth::logout();
+            // Ambil user dari guard 'web'
+            $user = Auth::guard('web')->user();
+
+            // 🚨 Perbaikan 2: Cek Role menggunakan user dari Guard 'web'
+            if ($user->role->nama_role !== 'admin') {
+                Auth::guard('web')->logout(); // Logout dari guard 'web'
                 return back()->withErrors(['email' => 'Akun ini bukan akun Admin.']);
             }
 
@@ -39,7 +43,8 @@ class AdminAuthController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        // 🚨 Perbaikan 3: Logout dari Guard 'web'
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('admin.login');

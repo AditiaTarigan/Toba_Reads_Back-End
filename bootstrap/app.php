@@ -33,6 +33,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\IsAdmin::class, // Alias untuk IsAdmin
+            // Tambahkan alias auth dan guest dengan guard 'web' untuk menghindari loop
+            // <-- PERBAIKAN: Definisi guard
+        ]);
+
         $middleware->web([
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
@@ -41,6 +47,4 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+    ->withExceptions(function (Exceptions $exceptions) {})->create();

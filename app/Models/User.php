@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, Notifiable, HasFactory;
 
     protected $table = 'users';
     protected $primaryKey = 'id_user';
@@ -21,14 +22,11 @@ class User extends Authenticatable
         'email',
         'password',
         'no_hp',
-<<<<<<< HEAD
         'role_id',
-=======
         'bio',
         'jenis_kelamin',
         'tanggal_lahir',
-        'role',
->>>>>>> 8b49cacd0caf28484b6dbb5034e1e644ba5506d5
+        // 'role',
     ];
 
     protected $hidden = [
@@ -66,5 +64,15 @@ class User extends Authenticatable
     public function hasilKuis()
     {
         return $this->hasMany(HasilKuis::class, 'id_user');
+    }
+
+    public function getAuthIdentifierName()
+    {
+        return 'id_user';
+    }
+
+    public function getAuthIdentifier()
+    {
+        return $this->attributes['id_user'];
     }
 }

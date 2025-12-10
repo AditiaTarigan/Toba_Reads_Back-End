@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Role; // 1. Wajib import Model Role
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -22,8 +22,17 @@ class AuthController extends Controller
             'tanggal_lahir' => 'nullable|date',
         ]);
 
-<<<<<<< HEAD
-        // 2. Cari ID milik role 'user' di database
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
+        // Cari ID milik role 'user' di database
         $roleUser = Role::where('nama_role', 'user')->first();
 
         // Safety check: Jika belum di-seed, berikan pesan error yang jelas
@@ -34,68 +43,31 @@ class AuthController extends Controller
             ], 500);
         }
 
-        // 3. Masukkan role_id ke dalam create user
-        $user = User::create([
-            'role_id' => $roleUser->id, // <--- Perubahan di sini (ambil ID dari hasil query)
-            'nama' => $validated['nama'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'no_hp' => $validated['no_hp'] ?? null,
-        ]);
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // Opsional: Load data role agar dikirim ke Flutter (biar tahu dia role apa)
-        $user->load('role');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Registration successful',
-            'data' => [
-                'user' => $user,
-                'token' => $token
-            ]
-        ], 201);
-    }
-
-    // Login
-    public function login(Request $request)
-    {
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
-        $user = User::where('email', $validated['email'])->first();
-
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-=======
-        if ($validator->fails()) {
->>>>>>> 8b49cacd0caf28484b6dbb5034e1e644ba5506d5
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
+            // Masukkan role_id ke dalam create user
             $user = User::create([
-                'nama' => $request->nama,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'no_hp' => $request->no_hp,
-                'bio' => $request->bio,
-                'jenis_kelamin' => $request->jenis_kelamin,
-                'tanggal_lahir' => $request->tanggal_lahir,
-                'role' => 'user',
+                'role_id' => $roleUser->id,
+                'nama' => $validated['nama'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'no_hp' => $validated['no_hp'] ?? null,
+                'bio' => $validated['bio'] ?? null,
+                'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
+                'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
             ]);
+
+            // Tambahkan token setelah registrasi
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Load data role
+            $user->load('role');
 
             return response()->json([
                 'success' => true,
-                'message' => 'Registrasi berhasil',
+                'message' => 'Registration successful',
                 'data' => [
-                    'user' => $user
+                    'user' => $user,
+                    'token' => $token
                 ]
             ], 201);
         } catch (\Exception $e) {
@@ -108,38 +80,30 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string'
+            'password' => 'required'
         ]);
 
-        if ($validator->fails()) {
+        $user = User::where('email', $validated['email'])
+            ->with('role')
+            ->first();
+
+        if (!$user || !Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email atau password salah'
+                'message' => 'Invalid email or password'
             ], 401);
         }
 
-        $token = $user->createToken('auth-token')->plainTextToken;
-
-        // 4. Load relasi role di login juga, agar Flutter tahu hak akses user ini
-        $user->load('role');
+        // Gunakan Sanctum untuk membuat token
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
-            'message' => 'Login berhasil',
+            'message' => 'Login successful',
             'data' => [
-                'user' => $user, // Sekarang object user akan berisi data role juga
+                'user' => $user,
                 'token' => $token
             ]
         ]);
@@ -155,11 +119,10 @@ class AuthController extends Controller
         ]);
     }
 
-    // Di AuthController.php
     public function profile(Request $request)
     {
         try {
-            $user = $request->user(); // Menggunakan Sanctum
+            $user = $request->user();
 
             if (!$user) {
                 return response()->json([
@@ -167,6 +130,8 @@ class AuthController extends Controller
                     'message' => 'Unauthorized'
                 ], 401);
             }
+
+            $user->load('role');
 
             return response()->json([
                 'success' => true,

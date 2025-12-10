@@ -22,7 +22,6 @@ Route::options('/{any}', function () {
 // ==================== PUBLIC ROUTES ====================
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-
 // Buku (public)
 Route::get('/buku', [BukuController::class, 'index']);
 Route::get('/buku/{id}', [BukuController::class, 'show']);
