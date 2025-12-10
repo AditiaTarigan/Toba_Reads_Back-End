@@ -21,7 +21,7 @@ class User extends Authenticatable
         'email',
         'password',
         'no_hp',
-        'role',
+        'role_id',
     ];
 
     protected $hidden = [
@@ -33,6 +33,11 @@ class User extends Authenticatable
     public function reviews()
     {
         return $this->hasMany(Review::class, 'id_user');
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id', 'id');
     }
 
     public function favorit()
